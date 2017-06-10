@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"testing"
 )
@@ -24,7 +25,6 @@ func TestNodeStruct(t *testing.T) {
 }
 
 func TestReadDataFile(t *testing.T) {
-	t.Log("Testing ReadDataFile function")
 	tsp_instance, err := ReadDataFile("../data/wi29.tsp")
 	if err != nil {
 		t.Errorf("An error happened, %s", err)
@@ -68,4 +68,63 @@ func TestReadDataFile(t *testing.T) {
 		log.WithFields(log.Fields{"Id": node.Id, "X": node.X, "Y": node.Y}).Error("Node does not have expected values")
 	}
 
+}
+
+func TestGetDistance(t *testing.T) {
+	tsp_instance, err := ReadDataFile("../data/wi29.tsp")
+	if err != nil {
+		t.Errorf("An error happened, %s", err)
+	}
+
+	n0 := tsp_instance.Nodes[0]
+	n1 := tsp_instance.Nodes[1]
+	n27 := tsp_instance.Nodes[27]
+	if d := GetDistance(&n0, &n1); d != 74.535614 {
+		log.WithFields(log.Fields{"expected": 74.535614,
+			"result": d}).Error("Expected value does not match with return value")
+	}
+
+	if d := GetDistance(&n0, &n27); d != 8102.468759 {
+		log.WithFields(log.Fields{"expected": 8102.468759,
+			"result": d}).Error("Expected value does not match with return value")
+	}
+}
+
+func TestGenerateRandomRoute(t *testing.T) {
+	r := GenerateRandomRoute(29)
+	if len(r.NodeOrder) != 29 {
+		log.WithField("Nodes in radom route", 29).Error("Expected value does not match with return value")
+	}
+	c := make([]int, 29)
+	for _, n := range r.NodeOrder {
+		c[n] = 1
+	}
+	if !IsRouteReady(c) {
+		log.Error("Route is not valid")
+	}
+
+	r = GenerateRandomRoute(2900)
+	if len(r.NodeOrder) != 2900 {
+		log.WithField("Nodes in radom route", 2900).Error("Expected value does not match with return value")
+	}
+	c = make([]int, 2900)
+	for _, n := range r.NodeOrder {
+		c[n] = 1
+	}
+	if !IsRouteReady(c) {
+		log.Error("Route is not valid")
+	}
+}
+
+func TestGetRouteCost(t *testing.T) {
+	tsp_instance, err := ReadDataFile("../data/wi29.tsp")
+	if err != nil {
+		t.Errorf("An error happened, %s", err)
+	}
+	fmt.Printf("%v\n", tsp_instance)
+	r := GenerateRandomRoute(tsp_instance.Dimension)
+	cost := tsp_instance.GetRouteCost(&r)
+	if cost < 27603 {
+		log.WithFields(log.Fields{"cost": cost, "optimal": 27603}).Error("Solution better than known optimal is found")
+	}
 }
