@@ -68,7 +68,7 @@ func (tsp *TSPInstance) ComputeOptimalRoute(r *Route, t0 float64, b float64, s *
 	t := t0
 	cost := float32(s.Goal) + 100.0
 	var optRoute Route
-	for currentIter < s.Iterations && s.Goal < cost && 1e-200 < t {
+	for currentIter < s.Iterations && s.Goal < cost {
 		nr := GenerateNeighborRoute(r)
 		c0 := tsp.GetRouteCost(r)
 		c1 := tsp.GetRouteCost(&nr)
@@ -119,10 +119,25 @@ func GenerateNeighborRoute(r *Route) Route {
 		j = rand.Intn(nr.Size)
 	}
 
-	ni := nr.NodeOrder[i]
-	nr.NodeOrder[i] = nr.NodeOrder[j]
-	nr.NodeOrder[j] = ni
+	if j > i {
+		m := j
+		j = i
+		i = m
+	}
+
+	for i > j {
+		nr.NodeOrder = SwapNodes(i, j, nr.NodeOrder)
+		i -= 1
+		j += 1
+	}
 	return nr
+}
+
+func SwapNodes(i int, j int, no []int) []int {
+	ni := no[i]
+	no[i] = no[j]
+	no[j] = ni
+	return no
 }
 
 func GenerateRandomRoute(n int) Route {

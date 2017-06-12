@@ -147,6 +147,8 @@ func TestComputeOptimalRoute(t *testing.T) {
 	cost := tsp_instance.GetRouteCost(&nr)
 	if cost > s.Goal {
 		log.WithFields(log.Fields{"cost": cost, "goal": s.Goal}).Error("Didn't reach the goal")
+	} else {
+		log.WithFields(log.Fields{"cost": cost, "goal": s.Goal}).Info("Reach the goal")
 	}
 }
 
@@ -157,13 +159,34 @@ func TestComputeOptimalRoute2(t *testing.T) {
 	}
 	rand.Seed(time.Now().UTC().UnixNano())
 	r := GenerateRandomRoute(tsp_instance.Dimension)
-	s := StopConditon{Goal: 27000.0, Iterations: 250000, Output: 10000}
+	s := StopConditon{Goal: 27610.0, Iterations: 250000, Output: 10000}
 	// r.NodeOrder = []int{2, 3, 7, 4, 0, 1, 5, 9, 10, 11, 14, 18, 17, 21, 22, 20, 28, 27, 25, 24, 26, 23, 15, 19, 16, 13, 12, 8, 6}
+	// r.NodeOrder = []int{0, 16, 19, 27, 20, 10, 15, 13, 4, 2, 17, 11, 24, 7, 25, 12, 14, 18, 23, 9, 1, 5, 28, 8, 6, 21, 3, 22, 26}
+	// [12 13 15 23 26 24 19 25 27 28 22 21 20 16 17 18 14 11 10 9 5 1 0 4 7 3 2 6 8]
 	nr := tsp_instance.ComputeOptimalRoute(&r, 16000.0, 0.99981, &s)
 	cost := tsp_instance.GetRouteCost(&nr)
 	log.WithField("r", r).Debug("r")
 	log.WithField("nr", nr).Debug("nr")
 	if cost > s.Goal {
 		log.WithFields(log.Fields{"cost": cost, "goal": s.Goal}).Error("Didn't reach the goal")
+	} else {
+		log.WithFields(log.Fields{"cost": cost, "goal": s.Goal}).Info("Reach the goal")
+	}
+}
+
+func TestComputeOptimalRoute3(t *testing.T) {
+	tsp_instance, err := ReadDataFile("../data/uy734.tsp")
+	if err != nil {
+		t.Errorf("An error happened, %s", err)
+	}
+	rand.Seed(time.Now().UTC().UnixNano())
+	r := GenerateRandomRoute(tsp_instance.Dimension)
+	s := StopConditon{Goal: 79200.0, Iterations: 5250000, Output: 25000}
+	nr := tsp_instance.ComputeOptimalRoute(&r, 10.0, 0.9999787, &s)
+	cost := tsp_instance.GetRouteCost(&nr)
+	if cost > s.Goal {
+		log.WithFields(log.Fields{"cost": cost, "goal": s.Goal}).Error("Didn't reach the goal")
+	} else {
+		log.WithFields(log.Fields{"cost": cost, "goal": s.Goal}).Info("Reach the goal")
 	}
 }
