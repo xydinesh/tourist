@@ -1,8 +1,8 @@
 package pkg
 
 import (
-	"fmt"
 	log "github.com/sirupsen/logrus"
+	"math/rand"
 	"testing"
 )
 
@@ -121,10 +121,60 @@ func TestGetRouteCost(t *testing.T) {
 	if err != nil {
 		t.Errorf("An error happened, %s", err)
 	}
-	fmt.Printf("%v\n", tsp_instance)
 	r := GenerateRandomRoute(tsp_instance.Dimension)
 	cost := tsp_instance.GetRouteCost(&r)
+	log.WithField("cost", cost).Info("Cost for route")
 	if cost < 27603 {
 		log.WithFields(log.Fields{"cost": cost, "optimal": 27603}).Error("Solution better than known optimal is found")
+	}
+
+	nr := GenerateNeighborRoute(&r)
+	cost = tsp_instance.GetRouteCost(&nr)
+	log.WithField("cost", cost).Info("Cost for neighbor route")
+}
+
+func TestComputeOptimalRoute(t *testing.T) {
+	rand.Seed(5)
+	tsp_instance, err := ReadDataFile("../data/ex1.tsp")
+	if err != nil {
+		t.Errorf("An error happened, %s", err)
+	}
+	r := GenerateRandomRoute(tsp_instance.Dimension)
+
+	s := StopConditon{Goal: 20.0, Iterations: 50, Output: 10}
+	nr := tsp_instance.ComputeOptimalRoute(&r, 1.0, 0.99981, &s)
+	cost := tsp_instance.GetRouteCost(&nr)
+	if cost > s.Goal {
+		log.WithFields(log.Fields{"cost": cost, "goal": s.Goal}).Error("Didn't reach the goal")
+	}
+}
+
+func TestComputeOptimalRoute2(t *testing.T) {
+	tsp_instance, err := ReadDataFile("../data/wi29.tsp")
+	if err != nil {
+		t.Errorf("An error happened, %s", err)
+	}
+	r := GenerateRandomRoute(tsp_instance.Dimension)
+
+	s := StopConditon{Goal: 37000.0, Iterations: 250000, Output: 10000}
+	nr := tsp_instance.ComputeOptimalRoute(&r, 100.0, 0.99981, &s)
+	cost := tsp_instance.GetRouteCost(&nr)
+	if cost > s.Goal {
+		log.WithFields(log.Fields{"cost": cost, "goal": s.Goal}).Error("Didn't reach the goal")
+	}
+}
+
+func TestComputeOptimalRoute3(t *testing.T) {
+	tsp_instance, err := ReadDataFile("../data/uy734.tsp")
+	if err != nil {
+		t.Errorf("An error happened, %s", err)
+	}
+	r := GenerateRandomRoute(tsp_instance.Dimension)
+
+	s := StopConditon{Goal: 100200.0, Iterations: 50000, Output: 10000}
+	nr := tsp_instance.ComputeOptimalRoute(&r, 10.0, 0.99981, &s)
+	cost := tsp_instance.GetRouteCost(&nr)
+	if cost > s.Goal {
+		log.WithFields(log.Fields{"cost": cost, "goal": s.Goal}).Error("Didn't reach the goal")
 	}
 }

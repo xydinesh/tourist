@@ -31,6 +31,13 @@ type Route struct {
 	Size      int
 }
 
+type StopConditon struct {
+	Goal           float32
+	MinTemperature float64
+	Iterations     int
+	Output         int
+}
+
 func init() {
 	// Log as JSON instead of the default ASCII formatter.
 	// log.SetFormatter(&log.JSONFormatter{})
@@ -40,7 +47,10 @@ func init() {
 	log.SetOutput(os.Stdout)
 
 	// Only log the warning severity or above.
-	log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.InfoLevel)
+
+	rand.Seed(time.Now().UTC().UnixNano())
+
 }
 
 func IsRouteReady(n []int) bool {
@@ -51,6 +61,39 @@ func IsRouteReady(n []int) bool {
 		}
 	}
 	return true
+}
+
+func (tsp *TSPInstance) ComputeOptimalRoute(r *Route, t0 float64, b float64, s *StopConditon) Route {
+	currentIter := 0
+	t := t0
+	cost := float32(s.Goal) + 100.0
+	var optRoute Route
+	for currentIter < s.Iterations && s.Goal < cost && 1e-200 < t {
+		nr := GenerateNeighborRoute(r)
+		c0 := tsp.GetRouteCost(r)
+		c1 := tsp.GetRouteCost(&nr)
+		delta := c1 - c0
+		u := c0 - float32(t*math.Log(rand.Float64()))
+		cost = c0
+		if delta < 0 {
+			r = &nr
+			cost = c1
+			// log.WithFields(log.Fields{"c0": c0, "c1": c1, "delta": c1 - c0, "t": t, "i": currentIter, "u": u}).Info("New route picked")
+		} else if c1 <= u {
+			r = &nr
+			cost = c1
+			log.WithFields(log.Fields{"c0": c0, "c1": c1, "delta": c1 - c0, "t": t, "i": currentIter, "u": u}).Info("New route picked")
+
+		}
+		t = b * t
+		if currentIter%s.Output == 0 {
+			log.WithFields(log.Fields{"c0": c0, "c1": c1, "delta": c1 - c0, "t": t, "i": currentIter, "u": u}).Info("Opimization")
+		}
+
+		optRoute = *r
+		currentIter += 1
+	}
+	return optRoute
 }
 
 func (tsp *TSPInstance) GetRouteCost(r *Route) float32 {
@@ -64,8 +107,24 @@ func (tsp *TSPInstance) GetRouteCost(r *Route) float32 {
 	return cost
 }
 
+func GenerateNeighborRoute(r *Route) Route {
+	nr := Route{}
+	nr.Size = r.Size
+	nr.NodeOrder = make([]int, nr.Size)
+	copy(nr.NodeOrder, r.NodeOrder)
+	i := rand.Intn(nr.Size)
+	j := rand.Intn(nr.Size)
+	for i == j {
+		i = rand.Intn(nr.Size)
+		j = rand.Intn(nr.Size)
+	}
+	ni := nr.NodeOrder[i]
+	nr.NodeOrder[i] = nr.NodeOrder[j]
+	nr.NodeOrder[j] = ni
+	return nr
+}
+
 func GenerateRandomRoute(n int) Route {
-	rand.Seed(time.Now().UnixNano())
 	r := Route{}
 	r.Size = n
 	r.NodeOrder = make([]int, n)
