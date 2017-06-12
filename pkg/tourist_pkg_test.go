@@ -4,6 +4,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"math/rand"
 	"testing"
+	"time"
 )
 
 func TestNodeStruct(t *testing.T) {
@@ -154,26 +155,14 @@ func TestComputeOptimalRoute2(t *testing.T) {
 	if err != nil {
 		t.Errorf("An error happened, %s", err)
 	}
+	rand.Seed(time.Now().UTC().UnixNano())
 	r := GenerateRandomRoute(tsp_instance.Dimension)
-
-	s := StopConditon{Goal: 37000.0, Iterations: 250000, Output: 10000}
-	nr := tsp_instance.ComputeOptimalRoute(&r, 100.0, 0.99981, &s)
+	s := StopConditon{Goal: 27000.0, Iterations: 250000, Output: 10000}
+	// r.NodeOrder = []int{2, 3, 7, 4, 0, 1, 5, 9, 10, 11, 14, 18, 17, 21, 22, 20, 28, 27, 25, 24, 26, 23, 15, 19, 16, 13, 12, 8, 6}
+	nr := tsp_instance.ComputeOptimalRoute(&r, 16000.0, 0.99981, &s)
 	cost := tsp_instance.GetRouteCost(&nr)
-	if cost > s.Goal {
-		log.WithFields(log.Fields{"cost": cost, "goal": s.Goal}).Error("Didn't reach the goal")
-	}
-}
-
-func TestComputeOptimalRoute3(t *testing.T) {
-	tsp_instance, err := ReadDataFile("../data/uy734.tsp")
-	if err != nil {
-		t.Errorf("An error happened, %s", err)
-	}
-	r := GenerateRandomRoute(tsp_instance.Dimension)
-
-	s := StopConditon{Goal: 100200.0, Iterations: 50000, Output: 10000}
-	nr := tsp_instance.ComputeOptimalRoute(&r, 10.0, 0.99981, &s)
-	cost := tsp_instance.GetRouteCost(&nr)
+	log.WithField("r", r).Debug("r")
+	log.WithField("nr", nr).Debug("nr")
 	if cost > s.Goal {
 		log.WithFields(log.Fields{"cost": cost, "goal": s.Goal}).Error("Didn't reach the goal")
 	}

@@ -47,7 +47,7 @@ func init() {
 	log.SetOutput(os.Stdout)
 
 	// Only log the warning severity or above.
-	log.SetLevel(log.InfoLevel)
+	log.SetLevel(log.DebugLevel)
 
 	rand.Seed(time.Now().UTC().UnixNano())
 
@@ -78,11 +78,11 @@ func (tsp *TSPInstance) ComputeOptimalRoute(r *Route, t0 float64, b float64, s *
 		if delta < 0 {
 			r = &nr
 			cost = c1
-			// log.WithFields(log.Fields{"c0": c0, "c1": c1, "delta": c1 - c0, "t": t, "i": currentIter, "u": u}).Info("New route picked")
+			// log.WithFields(log.Fields{"c0": c0, "c1": c1, "delta": c1 - c0, "t": t, "i": currentIter, "u": u}).Debug("New route picked")
 		} else if c1 <= u {
 			r = &nr
 			cost = c1
-			log.WithFields(log.Fields{"c0": c0, "c1": c1, "delta": c1 - c0, "t": t, "i": currentIter, "u": u}).Info("New route picked")
+			// log.WithFields(log.Fields{"c0": c0, "c1": c1, "delta": c1 - c0, "t": t, "i": currentIter, "u": u}).Debug("New route picked")
 
 		}
 		t = b * t
@@ -118,6 +118,7 @@ func GenerateNeighborRoute(r *Route) Route {
 		i = rand.Intn(nr.Size)
 		j = rand.Intn(nr.Size)
 	}
+
 	ni := nr.NodeOrder[i]
 	nr.NodeOrder[i] = nr.NodeOrder[j]
 	nr.NodeOrder[j] = ni
@@ -148,21 +149,16 @@ func GenerateRandomRoute(n int) Route {
 }
 
 func GetDistance(n1 *Node, n2 *Node) float32 {
-	log.WithFields(log.Fields{
-		"x": n1.X, "y": n1.Y, "id": n1.Id}).Debug("Node 1")
-	log.WithFields(log.Fields{
-		"x": n2.X, "y": n2.Y, "id": n2.Id}).Debug("Node 2")
+	// log.WithFields(log.Fields{"x": n1.X, "y": n1.Y, "id": n1.Id}).Debug("Node 1")
+	// log.WithFields(log.Fields{"x": n2.X, "y": n2.Y, "id": n2.Id}).Debug("Node 2")
 	xd := float64(n1.X - n2.X)
 	yd := float64(n1.Y - n2.Y)
 	d := math.Sqrt(xd*xd + yd*yd)
-	log.WithFields(log.Fields{
-		"n1": n1.Id, "n2": n2.Id, "distance": d}).Debug("Distance between Nodes")
+	// log.WithFields(log.Fields{"n1": n1.Id, "n2": n2.Id, "distance": d}).Debug("Distance between Nodes")
 	return float32(d)
 }
 
 func ReadDataFile(filename string) (TSPInstance, error) {
-	log.WithFields(log.Fields{"filename": filename}).Debug("Reading file for data")
-
 	f, err := os.Open(filename)
 	if err != nil {
 		return TSPInstance{}, err
