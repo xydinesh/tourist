@@ -15,8 +15,8 @@ package cmd
 
 import (
 	"fmt"
-  tourist "github.com/xydinesh/tourist/pkg"
 	"github.com/spf13/cobra"
+	tourist "github.com/xydinesh/tourist/pkg"
 )
 
 var TSPFile string
