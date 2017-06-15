@@ -68,30 +68,34 @@ func (tsp *TSPInstance) ComputeOptimalRoute(r *Route, t0 float64, b float64, s *
 	t := t0
 	cost := float32(s.Goal) + 100.0
 	var optRoute Route
+	counter := 0
 	for currentIter < s.Iterations && s.Goal < cost {
-		nr := GenerateNeighborRoute(r)
-		c0 := tsp.GetRouteCost(r)
-		c1 := tsp.GetRouteCost(&nr)
-		delta := c1 - c0
-		u := c0 - float32(t*math.Log(rand.Float64()))
-		cost = c0
-		if delta < 0 {
-			r = &nr
-			cost = c1
-			// log.WithFields(log.Fields{"c0": c0, "c1": c1, "delta": c1 - c0, "t": t, "i": currentIter, "u": u}).Debug("New route picked")
-		} else if c1 <= u {
-			r = &nr
-			cost = c1
-			// log.WithFields(log.Fields{"c0": c0, "c1": c1, "delta": c1 - c0, "t": t, "i": currentIter, "u": u}).Debug("New route picked")
+		counter = 0
+		for counter < 1000 {
+			nr := GenerateNeighborRoute(r)
+			c0 := tsp.GetRouteCost(r)
+			c1 := tsp.GetRouteCost(&nr)
+			delta := c1 - c0
+			u := c0 - float32(t*math.Log(rand.Float64()))
+			cost = c0
+			if delta < 0 {
+				r = &nr
+				cost = c1
+				// log.WithFields(log.Fields{"c0": c0, "c1": c1, "delta": c1 - c0, "t": t, "i": currentIter, "u": u}).Debug("New route picked")
+			} else if c1 <= u {
+				r = &nr
+				cost = c1
+				// log.WithFields(log.Fields{"c0": c0, "c1": c1, "delta": c1 - c0, "t": t, "i": currentIter, "u": u}).Debug("New route picked")
 
+			}
+			if currentIter%s.Output == 0 && counter == 0 {
+				log.WithFields(log.Fields{"c0": c0, "c1": c1, "delta": c1 - c0, "t": t, "i": currentIter, "u": u}).Info("Opimization")
+			}
+			counter++
+			optRoute = *r
 		}
 		t = b * t
-		if currentIter%s.Output == 0 {
-			log.WithFields(log.Fields{"c0": c0, "c1": c1, "delta": c1 - c0, "t": t, "i": currentIter, "u": u}).Info("Opimization")
-		}
-
-		optRoute = *r
-		currentIter += 1
+		currentIter++
 	}
 	return optRoute
 }
